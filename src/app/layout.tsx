@@ -6,6 +6,7 @@ import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { Analytics } from "@vercel/analytics/next";
+import SpeedInsights from "@vercel/speed-insights/next";
 
 import { PersonaProvider } from "@/hooks/usePersona";
 import { ConsentBanner } from "@/components/tracking/ConsentBanner";
@@ -96,6 +97,7 @@ export default function RootLayout({
           {/* Dev Tools (only in development) */}
           <DevTools />
         </PersonaProvider>
+        <SpeedInsights />
         <Analytics />
       </body>
     </html>
