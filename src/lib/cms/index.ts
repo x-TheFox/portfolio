@@ -314,28 +314,34 @@ export async function updateHeroContent(persona: PersonaType, data: Partial<Hero
       .from(heroContent)
       .where(eq(heroContent.persona, persona))
       .limit(1);
-    
+    // FIX: Destructure 'id' out of the incoming data.
+    // We strictly do NOT want to pass "default" as an ID to the database.
+    const { id: _unusedId, ...cleanData } = data;
+
     if (existing.length === 0) {
       // Create new
       const result = await database
         .insert(heroContent)
-        .values({ 
-          ...DEFAULT_HERO_CONTENT[persona], 
-          ...data, 
+        .values({
+          ...DEFAULT_HERO_CONTENT[persona],
+          ...cleanData,
           persona,
-          updatedAt: new Date() 
+          updatedAt: new Date(),
         })
         .returning();
       return result[0];
     }
-    
+
     // Update existing
     const result = await database
       .update(heroContent)
-      .set({ ...data, updatedAt: new Date() })
+      .set({
+        ...cleanData,
+        updatedAt: new Date(),
+      })
       .where(eq(heroContent.id, existing[0].id))
       .returning();
-    
+
     return result[0];
   } catch (error) {
     console.error('Error updating hero content:', error);
