@@ -5,6 +5,7 @@ import { getChatSystemPrompt, buildContextualPrompt } from '@/lib/ai/prompts';
 import { PersonaType, DEFAULT_PERSONA } from '@/types/persona';
 import { getSkills, getProfile } from '@/lib/cms';
 import { getProjects } from '@/lib/notion/projects';
+import { summarizeWithGemini } from '@/lib/ai/gemini';
 
 interface ChatRequest {
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
@@ -57,31 +58,13 @@ async function fetchProjectCode(repoName: string, githubUsername: string): Promi
 
     const data = await response.json();
     
-    // Summarize the large response using Groq
-    const summaryPrompt = `You are a code summarizer. Given the following repository data, create a concise technical summary (max 1500 tokens) that includes:
-1. Repository structure (key directories and their purpose)
-2. Main technologies and dependencies
-3. Key files and their functionality
-4. Notable implementation patterns or architecture decisions
+    // Construct the full content for summarization
+    const contentToSummarize = `Repository: ${repoName}\nSummary: ${data.summary || 'No summary available'}\nFile Tree:\n${data.tree || 'No tree available'}\n\nContent:\n${data.content || ''}`;
 
-Repository: ${repoName}
-Summary: ${data.summary || 'No summary available'}
-File Tree:
-${data.tree || 'No tree available'}
+    // Summarize the large response using Gemini
+    const summary = await summarizeWithGemini(contentToSummarize);
 
-Content (truncated to first 50000 chars):
-${(data.content || '').substring(0, 50000)}
-
-Provide a structured, technical summary that would help answer questions about this codebase:`;
-
-    const summaryResponse = await groq.chat.completions.create({
-      model: GROQ_MODELS.FAST,
-      messages: [{ role: 'user', content: summaryPrompt }],
-      temperature: 0.3,
-      max_tokens: 1500,
-    });
-
-    return summaryResponse.choices[0]?.message?.content || 'Failed to summarize repository.';
+    return summary;
   } catch (error) {
     console.error('Gitingest fetch error:', error);
     return `Error fetching repository "${repoName}": ${error instanceof Error ? error.message : 'Unknown error'}`;
