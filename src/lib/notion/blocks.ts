@@ -173,7 +173,22 @@ function parseBlock(block: BlockObjectResponse & { children?: BlockObjectRespons
         content: '',
         metadata: {
           // Table metadata
+          hasHeader: (block as any).table?.has_column_header !== false,
+          columns: (block as any).table?.table_width ?? undefined,
         },
+      };
+
+    case 'table_row':
+      // Notion table row contains an array of cell rich text arrays: table_row.cells: RichTextItemResponse[][]
+      // Convert each cell to plain text and join with a pipe so the renderer can split into columns.
+      const cells = (block as any).table_row?.cells as RichTextItemResponse[][] | undefined;
+      const rowContent = Array.isArray(cells)
+        ? cells.map(cell => extractPlainText(cell)).join(' | ')
+        : '';
+
+      return {
+        ...base,
+        content: rowContent,
       };
 
     default:
