@@ -1,0 +1,10 @@
+export { Hero } from './Hero';
+export { ProjectsGrid } from './Projects';
+export { Skills } from './Skills';
+export { Experience } from './Experience';
+export { Contact } from './Contact';
+export { About } from './About';
+export { Certificates } from './Certificates';
+export { Footer } from './Footer';
+export { CaseStudies } from './CaseStudies';
+export { Architecture } from './Architecture';

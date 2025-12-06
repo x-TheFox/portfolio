@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceX {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+/* Animation utility classes */
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-bounce-x {
+  animation: bounceX 1.5s ease-in-out infinite;
+}
+
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+/* UploadThing styles */
+[data-ut-element="button"] {
+  background-color: rgb(37, 99, 235) !important;
+  color: white !important;
+  cursor: pointer !important;
+}
+
+[data-ut-element="button"]:hover {
+  background-color: rgb(29, 78, 216) !important;
+}
+
+[data-ut-element="container"] {
+  padding: 1rem;
+}
+
+[data-ut-element="upload-icon"] {
+  color: rgb(161, 161, 170);
+}
+
+[data-ut-element="label"] {
+  color: rgb(161, 161, 170);
+}
+
+[data-ut-element="allowed-content"] {
+  color: rgb(113, 113, 122);
+}
+
+.ut-uploading\:cursor-not-allowed:is([data-state="uploading"]) {
+  cursor: not-allowed !important;
+}
