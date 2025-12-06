@@ -1,6 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GENAI_API_KEY);
+const apiKey = process.env.GENAI_API_KEY;
+
+if (!apiKey) {
+  throw new Error("GENAI_API_KEY environment variable is not set.");
+}
+
+const genAI = new GoogleGenerativeAI(apiKey);
 
 export async function summarizeWithGemini(content: string): Promise<string> {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
