@@ -133,7 +133,7 @@ graph TD
     Provider --> Consent[ConsentBanner]
     Provider --> Tracker[BehaviorTracker]
     Provider --> Chat[ChatWidget]
-    Provider --> Observer[Observer (Dev Mode)]
+    Provider --> ObserverDev[Observer (Dev Mode)]
     Provider --> Mobile[MobilePrompt]
     Provider --> Dev[DevTools]
     
