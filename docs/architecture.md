@@ -126,18 +126,17 @@ graph TB
 ### Component Hierarchy
 The React tree is designed to wrap the main content in a `PersonaProvider`, allowing state to flow down to UI components which adapt their rendering logic (Section Order, Mobile Prompts, etc.).
 
-```mermaid
-graph TD
-    Root[app/layout.tsx] --> Provider[PersonaProvider]
+```graph TD
+    Root["app/layout.tsx"] --> Provider["PersonaProvider"]
     
-    Provider --> Consent[ConsentBanner]
-    Provider --> Tracker[BehaviorTracker]
-    Provider --> Chat[ChatWidget]
-    Provider --> ObserverDev[Observer (Dev Mode)]
-    Provider --> Mobile[MobilePrompt]
-    Provider --> Dev[DevTools]
+    Provider --> Consent["ConsentBanner"]
+    Provider --> Tracker["BehaviorTracker"]
+    Provider --> Chat["ChatWidget"]
+    Provider --> ObserverDev["Observer (Dev Mode)"]
+    Provider --> Mobile["MobilePrompt"]
+    Provider --> Dev["DevTools"]
     
-    Provider --> Main[main / HomeClient]
+    Provider --> Main["main/HomeClient"]
     
     Main --> Hero
     Main --> About
