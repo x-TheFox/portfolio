@@ -259,4 +259,4 @@ MIT © The Adaptive Developer
 
 ---
 
-Built with 🧠 by an AI-augmented developer
+Built with 🧠 and ❤️ by an AI-augmented developer
