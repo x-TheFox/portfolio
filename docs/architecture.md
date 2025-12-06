@@ -132,7 +132,7 @@ The React tree is designed to wrap the main content in a `PersonaProvider`, allo
     Provider --> Consent["ConsentBanner"]
     Provider --> Tracker["BehaviorTracker"]
     Provider --> Chat["ChatWidget"]
-    Provider --> ObserverDev["Observer (Dev Mode)"]
+    Provider --> ObserverDev["Observer \(Dev Mode\)"]
     Provider --> Mobile["MobilePrompt"]
     Provider --> Dev["DevTools"]
     
