@@ -255,7 +255,7 @@ Contributions welcome! Please read our contributing guidelines first.
 
 ## 📄 License
 
-MIT © The Adaptive Developer
+MIT © Sam Adrian
 
 ---
 
