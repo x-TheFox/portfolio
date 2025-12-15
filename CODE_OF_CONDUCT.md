@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We, as contributors and maintainers of the x-TheFox/portfolio project, are committed to making participation in our community a harassment-free and welcoming experience for everyone. We value the contributions of all individuals, regardless of their level of experience, background, or identity.
+We, as contributors and maintainers of the x-TheFox/The-Adaptive-Developer project, are committed to making participation in our community a harassment-free and welcoming experience for everyone. We value the contributions of all individuals, regardless of their level of experience, background, or identity.
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
