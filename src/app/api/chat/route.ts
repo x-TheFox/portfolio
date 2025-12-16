@@ -5,7 +5,10 @@ import { getChatSystemPrompt, buildContextualPrompt } from '@/lib/ai/prompts';
 import { PersonaType, DEFAULT_PERSONA } from '@/types/persona';
 import { getSkills, getProfile } from '@/lib/cms';
 import { getProjects } from '@/lib/notion/projects';
-import { summarizeWithGemini } from '@/lib/ai/gemini';
+// summarizeWithGemini is imported dynamically within functions that use it to avoid
+// requiring GENAI_API_KEY at build-time (prevents build failures when env var
+// is not set in preview environments)
+
 
 interface ChatRequest {
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
@@ -61,8 +64,15 @@ async function fetchProjectCode(repoName: string, githubUsername: string): Promi
     // Construct the full content for summarization
     const contentToSummarize = `Repository: ${repoName}\nSummary: ${data.summary || 'No summary available'}\nFile Tree:\n${data.tree || 'No tree available'}\n\nContent:\n${data.content || ''}`;
 
-    // Summarize the large response using Gemini
-    const summary = await summarizeWithGemini(contentToSummarize);
+    // Summarize the large response using Gemini (dynamically import to avoid build-time env dependency)
+    let summary: string;
+    try {
+      const { summarizeWithGemini } = await import('@/lib/ai/gemini');
+      summary = await summarizeWithGemini(contentToSummarize);
+    } catch (err) {
+      console.error('Gemini summarization not available:', err);
+      summary = 'Summarization temporarily unavailable.';
+    }
 
     return summary;
   } catch (error) {

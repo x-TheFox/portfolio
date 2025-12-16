@@ -93,9 +93,10 @@ export default function IntakePage() {
 
   // History: push an intake state when the component mounts, and push on step changes.
   useEffect(() => {
-    // If there's no intake marker in history state, push initial intake state
+    // If current history entry is not marked as intake, replace it so we don't create
+    // an extra history entry that would cause back to jump to another intake state.
     if (!window.history.state || !window.history.state.isIntake) {
-      window.history.pushState({ isIntake: true, step: 0 }, '');
+      window.history.replaceState({ isIntake: true, step: 0 }, '');
     } else {
       // Ensure currentStep matches state on mount
       const s = window.history.state?.step ?? 0;
@@ -107,7 +108,7 @@ export default function IntakePage() {
       if (state && state.isIntake) {
         setCurrentStep(state.step ?? 0);
       } else {
-        // Navigated outside intake - let browser handle it (do not prevent)
+        // Navigated outside intake - let browser handle it (component may unmount)
       }
     };
 
@@ -126,10 +127,8 @@ export default function IntakePage() {
 
   const handleBack = () => {
     if (currentStep > 0) {
-      const prev = currentStep - 1;
-      setCurrentStep(prev);
-      // push a state so popstate works correctly (keeps our history in sync)
-      window.history.pushState({ isIntake: true, step: prev }, '');
+      // Use history.back() to navigate to the previous intake step entry
+      window.history.back();
     } else {
       // If on the first step, go back to previous page
       router.back();

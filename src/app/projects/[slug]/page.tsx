@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getProjectBySlug, getAllProjectSlugs, getProjects } from '@/lib/notion/projects';
 import { NotionRenderer } from '@/components/notion';
+import { RepoCard } from '@/components/projects/RepoCard';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Calendar, Clock, ExternalLink, Github, Sparkles, Users } from 'lucide-react';
@@ -39,6 +40,19 @@ export default async function ProjectPage({
   const relatedProjects = allProjects
     .filter(p => p.category === project.category && p.id !== project.id)
     .slice(0, 3);
+
+  // Fetch GitHub repo metadata if available
+  let repoMeta = null;
+  if (project.githubUrl) {
+    try {
+      const githubUrl = project.githubUrl as string;
+      const meta = await import('@/lib/github').then(m => m.fetchRepoMetaFromUrl(githubUrl));
+      repoMeta = meta;
+    } catch (err) {
+      // Ignore fetch errors - we'll render a simple link instead
+      repoMeta = null;
+    }
+  }
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -148,7 +162,12 @@ export default async function ProjectPage({
             <p className="text-zinc-500">This project doesn&apos;t have additional content yet.</p>
           </div>
         )}
-      </article>
+        {/* GitHub repo preview */}
+        {project.githubUrl && (
+          <div className="mt-8">
+            <RepoCard githubUrl={project.githubUrl} repo={repoMeta ?? undefined} />
+          </div>
+        )}      </article>
 
       {/* Related Projects */}
       {relatedProjects.length > 0 && (
