@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
@@ -88,15 +89,50 @@ export default function IntakePage() {
   const isLastStep = currentStep === STEPS.length - 1;
   const isComplete = response !== null;
 
+  const router = useRouter();
+
+  // History: push an intake state when the component mounts, and push on step changes.
+  useEffect(() => {
+    // If there's no intake marker in history state, push initial intake state
+    if (!window.history.state || !window.history.state.isIntake) {
+      window.history.pushState({ isIntake: true, step: 0 }, '');
+    } else {
+      // Ensure currentStep matches state on mount
+      const s = window.history.state?.step ?? 0;
+      setCurrentStep(s);
+    }
+
+    const onPop = (e: PopStateEvent) => {
+      const state = (e.state as any);
+      if (state && state.isIntake) {
+        setCurrentStep(state.step ?? 0);
+      } else {
+        // Navigated outside intake - let browser handle it (do not prevent)
+      }
+    };
+
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      // push history state for back navigation between steps
+      window.history.pushState({ isIntake: true, step: next }, '');
     }
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      const prev = currentStep - 1;
+      setCurrentStep(prev);
+      // push a state so popstate works correctly (keeps our history in sync)
+      window.history.pushState({ isIntake: true, step: prev }, '');
+    } else {
+      // If on the first step, go back to previous page
+      router.back();
     }
   };
 
@@ -294,15 +330,13 @@ export default function IntakePage() {
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBack}
-                disabled={currentStep === 0}
                 className={cn(
                   'flex items-center gap-2 px-4 py-2 rounded-lg',
-                  'text-zinc-400 hover:text-white transition-colors',
-                  currentStep === 0 && 'opacity-50 cursor-not-allowed'
+                  'text-zinc-400 hover:text-white transition-colors'
                 )}
               >
                 <ArrowLeft size={18} />
-                Back
+                {currentStep === 0 ? 'Back to site' : 'Back'}
               </button>
 
               {isLastStep ? (
