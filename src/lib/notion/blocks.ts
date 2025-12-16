@@ -90,7 +90,27 @@ function parseBlock(block: BlockObjectResponse & { children?: BlockObjectRespons
         metadata: { color: block.toggle.color },
       };
 
+    case 'equation':
+      return {
+        ...base,
+        type: 'equation',
+        content: (block as any).equation?.expression ?? extractPlainText((block as any).equation?.rich_text || []),
+      };
+
     case 'code':
+      // If code block is a mermaid diagram, map to `mermaid` type for the renderer
+      if ((block.code.language ?? '').toLowerCase() === 'mermaid') {
+        return {
+          ...base,
+          type: 'mermaid',
+          content: extractPlainText(block.code.rich_text),
+          metadata: {
+            language: block.code.language,
+            caption: block.code.caption ? extractPlainText(block.code.caption) : undefined,
+          },
+        };
+      }
+
       return {
         ...base,
         content: extractPlainText(block.code.rich_text),

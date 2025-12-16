@@ -50,7 +50,8 @@ function parseInlineMarkdown(text: string): React.ReactNode {
   // First, handle block-level LaTeX ($$...$$) - these should be on their own
   // For inline parsing, we handle: **bold**, *italic*, `code`, and $inline latex$
   // Order matters: check $$ before $, ** before *
-  const regex = /(\$\$(.+?)\$\$|\$([^$]+?)\$|\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+  // Use [\s\S] for $$ to allow multiline block math
+  const regex = /(\$\$([\s\S]+?)\$\$|\$([^$]+?)\$|\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
   let lastIndex = 0;
   let match;
   
@@ -62,21 +63,47 @@ function parseInlineMarkdown(text: string): React.ReactNode {
     
     if (match[2]) {
       // $$block latex$$
-      parts.push(<LaTeXBlock key={key++} formula={match[2].trim()} />);
+      const blockFormula = match[2].trim();
+      const sanitizedBlockFormula = blockFormula
+        .replace(/\\u003c/g, '\\lt')
+        .replace(/\\u003e/g, '\\gt')
+        .replace(/&lt;|&#60;|&#x3c;/gi, '\\lt')
+        .replace(/&gt;|&#62;|&#x3e;/gi, '\\gt')
+        .replace(/</g, '\\lt')
+        .replace(/>/g, '\\gt');
+      parts.push(<LaTeXBlock key={key++} formula={sanitizedBlockFormula} />);
     } else if (match[3]) {
       // $inline latex$
-      parts.push(<LaTeXInline key={key++} formula={match[3].trim()} />);
+      const inlineFormula = match[3].trim();
+      const sanitizedInlineFormula = inlineFormula
+        .replace(/\\u003c/g, '\\lt')
+        .replace(/\\u003e/g, '\\gt')
+        .replace(/&lt;|&#60;|&#x3c;/gi, '\\lt')
+        .replace(/&gt;|&#62;|&#x3e;/gi, '\\gt')
+        .replace(/</g, '\\lt')
+        .replace(/>/g, '\\gt');
+      parts.push(<LaTeXInline key={key++} formula={sanitizedInlineFormula} />);
     } else if (match[4]) {
-      // **bold**
-      parts.push(<strong key={key++} className="font-semibold text-white">{match[4]}</strong>);
+      // **bold** - recursively parse inner content so nested math/formatting works
+      const inner = match[4];
+      parts.push(
+        <strong key={key++} className="font-semibold text-white">
+          {parseInlineMarkdown(inner)}
+        </strong>
+      );
     } else if (match[5]) {
-      // *italic*
-      parts.push(<em key={key++} className="italic">{match[5]}</em>);
+      // *italic* - recursively parse inner content
+      const inner = match[5];
+      parts.push(
+        <em key={key++} className="italic">
+          {parseInlineMarkdown(inner)}
+        </em>
+      );
     } else if (match[6]) {
-      // `code`
+      // `code` - do not parse inside code spans
       parts.push(<code key={key++} className="text-yellow-400 bg-zinc-800/50 px-1.5 py-0.5 rounded text-sm">{match[6]}</code>);
     }
-    
+
     lastIndex = regex.lastIndex;
   }
   
@@ -97,10 +124,18 @@ export function NotionRenderer({ blocks, className }: NotionRendererProps) {
       'prose-p:text-zinc-300 prose-p:leading-relaxed',
       'prose-a:text-yellow-400 prose-a:no-underline hover:prose-a:underline',
       'prose-strong:text-white prose-strong:font-semibold',
-      'prose-code:text-yellow-400 prose-code:bg-zinc-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none',
+      // removed inline prose-code styles to allow inline code components to style themselves
       className
     )}>
       {renderBlocksWithLists(blocks)}
+
+      {/* Dev-only debug: show parsed blocks JSON when ?showParsed=1 is in the URL */}
+      {process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && window.location.search.includes('showParsed=1') && (
+        <details className="my-6 p-4 bg-zinc-900/40 rounded border border-zinc-800 text-sm text-zinc-300">
+          <summary className="cursor-pointer font-mono text-xs text-zinc-400">Show parsed Notion blocks (dev)</summary>
+          <pre className="mt-2 overflow-auto whitespace-pre-wrap">{JSON.stringify(blocks, null, 2)}</pre>
+        </details>
+      )}
     </article>
   );
 }
@@ -111,6 +146,35 @@ function Block({ block }: { block: ParsedBlock }) {
       if (!block.content) {
         return <div className="h-4" />; // Empty paragraph spacer
       }
+
+      // Support markdown-style headings pasted into Notion paragraphs like "#### 1\\. Heading"
+      const mdHeadingMatch = block.content.match(/^(#{1,6})\s*(.*)$/);
+      if (mdHeadingMatch) {
+        const level = mdHeadingMatch[1].length;
+        // Unescape heading dots: "1\. " -> "1. "
+        const headingText = mdHeadingMatch[2].replace(/\\\./g, '.').trim();
+        const headingChildren = parseInlineMarkdown(headingText);
+
+        if (level === 1) return (
+          <h2 className="text-3xl md:text-4xl font-bold text-white mt-12 mb-6 pb-3 border-b border-zinc-800">{headingChildren}</h2>
+        );
+        if (level === 2) return (
+          <h3 className="text-2xl md:text-3xl font-semibold text-white mt-10 mb-4">{headingChildren}</h3>
+        );
+        if (level === 3) return (
+          <h4 className="text-xl md:text-2xl font-medium text-zinc-100 mt-8 mb-3">{headingChildren}</h4>
+        );
+        if (level === 4) return (
+          <h5 className="text-lg font-medium text-zinc-100 mt-6 mb-2">{headingChildren}</h5>
+        );
+        if (level === 5) return (
+          <h6 className="text-base font-medium text-zinc-100 mt-4 mb-2">{headingChildren}</h6>
+        );
+        return (
+          <h6 className="text-base font-medium text-zinc-100 mt-4 mb-2">{headingChildren}</h6>
+        );
+      }
+
       return (
         <p className="text-zinc-300 leading-relaxed mb-6 text-lg">
           {parseInlineMarkdown(block.content)}
@@ -234,9 +298,11 @@ function Block({ block }: { block: ParsedBlock }) {
       );
 
     case 'equation':
+      // Sanitize angle brackets inside block LaTeX to avoid HTML/tokenization issues
+      const sanitizedEquation = (block.content || '').replace(/</g, '\\lt').replace(/>/g, '\\gt');
       return (
         <div className="my-8 p-6 rounded-xl bg-zinc-900/50 border border-zinc-800 overflow-x-auto">
-          <LaTeXBlock formula={block.content} />
+          <LaTeXBlock formula={sanitizedEquation} />
         </div>
       );
 

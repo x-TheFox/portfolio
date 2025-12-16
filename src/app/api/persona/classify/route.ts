@@ -15,7 +15,27 @@ interface ClassifyRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: ClassifyRequest = await request.json();
+    // Parse request body as text then JSON.parse to avoid request.json() throwing unexpectedly.
+    const raw = await request.text();
+    if (!raw) {
+      console.error('Classification error: empty request body');
+      return NextResponse.json(
+        { success: false, error: 'Empty request body' },
+        { status: 400 }
+      );
+    }
+
+    let body: ClassifyRequest;
+    try {
+      body = JSON.parse(raw);
+    } catch (err) {
+      console.error('Classification error: invalid JSON body', err);
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON body' },
+        { status: 400 }
+      );
+    }
+
     const { sessionId, useAI = true } = body;
 
     if (!sessionId) {

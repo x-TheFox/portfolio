@@ -354,7 +354,7 @@ function ChatMessage({ message }: { message: Message }) {
 
 function ChatMarkdown({ content }: { content: string }) {
   return (
-    <div className="text-sm prose prose-sm prose-invert max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:my-2 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700/50 prose-code:text-cyan-300 prose-code:bg-zinc-800/80 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-a:text-cyan-400 prose-strong:text-white prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+    <div className="text-sm prose prose-sm prose-invert max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:my-2 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700/50 prose-a:text-cyan-400 prose-strong:text-white prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
       <MarkdownRenderer content={content} compact />
     </div>
   );

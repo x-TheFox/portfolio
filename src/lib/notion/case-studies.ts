@@ -57,7 +57,9 @@ function parseMarkdownToBlocks(markdown: string): ParsedBlock[] {
       // Could be single-line $$formula$$ or multi-line
       if (line.trim().endsWith('$$') && line.trim().length > 4) {
         // Single line: $$ formula $$
-        const formula = line.trim().slice(2, -2).trim();
+        let formula = line.trim().slice(2, -2).trim();
+        // Sanitize angle brackets inside block LaTeX
+        formula = formula.replace(/</g, '\\lt').replace(/>/g, '\\gt');
         blocks.push({
           id: nextId(),
           type: 'equation',
