@@ -28,8 +28,8 @@ describe('HeavyPageWrapper', () => {
   });
 
   it('shows overlay initially and hides after mount', async () => {
-    // mock requestAnimationFrame to call callback immediately
-    (global as any).requestAnimationFrame = (cb: FrameRequestCallback) => { cb(); return 0; };
+    // mock requestAnimationFrame to call callback immediately with a timestamp
+    (global as any).requestAnimationFrame = (cb: FrameRequestCallback) => { cb(0); return 0; };
     (global as any).__rafMock = true;
 
     render(
